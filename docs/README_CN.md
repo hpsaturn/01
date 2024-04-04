@@ -39,7 +39,7 @@ git clone https://github.com/OpenInterpreter/01 # Clone the repository
 cd 01/software # CD into the source directory
 ```
 
-<!-- > Not working? Read our [setup guide](https://docs.openinterpreter.com/getting-started/setup). -->
+<!-- > 不起作用？阅读我们的[安装指南](https://docs.openinterpreter.com/getting-started/setup)。 -->
 
 ```shell
 brew install portaudio ffmpeg cmake # Install Mac OSX dependencies
@@ -47,6 +47,8 @@ poetry install # Install Python dependencies
 export OPENAI_API_KEY=sk... # OR run `poetry run 01 --local` to run everything locally
 poetry run 01 # Runs the 01 Light simulator (hold your spacebar, speak, release)
 ```
+
+<!-- > 对于Windows安装，请阅读我们的[专用安装指南](https://docs.openinterpreter.com/getting-started/setup#windows)。 -->
 
 <br>
 
@@ -78,7 +80,9 @@ poetry run 01 # Runs the 01 Light simulator (hold your spacebar, speak, release)
 
 ## LMC 消息
 
-为了与系统的不同组件进行通信，我们引入了 [LMC 消息](https://docs.openinterpreter.com/protocols/lmc-messages) 格式，它扩展了 OpenAI 的消息格式以包含一个 "computer" 角色。
+为了与系统的不同组件进行通信，我们引入了 [LMC 消息](https://docs.openinterpreter.com/protocols/lmc-messages) 格式，它扩展了 OpenAI 的消息格式以包含一个 "computer" 角色：
+
+https://github.com/OpenInterpreter/01/assets/63927363/8621b075-e052-46ba-8d2e-d64b9f2a5da9
 
 ## 动态系统消息
 
