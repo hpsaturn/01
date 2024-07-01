@@ -5,8 +5,7 @@ import threading
 import os
 import importlib
 from source.server.tunnel import create_tunnel
-from source.server.server import main
-from source.server.utils.local_mode import select_local_model
+from source.server.async_server import main
 
 import signal
 
@@ -39,39 +38,9 @@ def run(
     client_type: str = typer.Option(
         "auto", "--client-type", help="Specify the client type"
     ),
-    llm_service: str = typer.Option(
-        "litellm", "--llm-service", help="Specify the LLM service"
+    qr: bool = typer.Option(
+        False, "--qr", help="Display QR code to scan to connect to the server"
     ),
-    model: str = typer.Option("gpt-4", "--model", help="Specify the model"),
-    llm_supports_vision: bool = typer.Option(
-        False,
-        "--llm-supports-vision",
-        help="Specify if the LLM service supports vision",
-    ),
-    llm_supports_functions: bool = typer.Option(
-        False,
-        "--llm-supports-functions",
-        help="Specify if the LLM service supports functions",
-    ),
-    context_window: int = typer.Option(
-        2048, "--context-window", help="Specify the context window size"
-    ),
-    max_tokens: int = typer.Option(
-        4096, "--max-tokens", help="Specify the maximum number of tokens"
-    ),
-    temperature: float = typer.Option(
-        0.8, "--temperature", help="Specify the temperature for generation"
-    ),
-    tts_service: str = typer.Option(
-        "openai", "--tts-service", help="Specify the TTS service"
-    ),
-    stt_service: str = typer.Option(
-        "openai", "--stt-service", help="Specify the STT service"
-    ),
-    local: bool = typer.Option(
-        False, "--local", help="Use recommended local services for LLM, STT, and TTS"
-    ),
-    qr: bool = typer.Option(False, "--qr", help="Print the QR code for the server URL"),
 ):
     _run(
         server=server,
@@ -82,16 +51,6 @@ def run(
         client=client,
         server_url=server_url,
         client_type=client_type,
-        llm_service=llm_service,
-        model=model,
-        llm_supports_vision=llm_supports_vision,
-        llm_supports_functions=llm_supports_functions,
-        context_window=context_window,
-        max_tokens=max_tokens,
-        temperature=temperature,
-        tts_service=tts_service,
-        stt_service=stt_service,
-        local=local,
         qr=qr,
     )
 
@@ -105,23 +64,12 @@ def _run(
     client: bool = False,
     server_url: str = None,
     client_type: str = "auto",
-    llm_service: str = "litellm",
-    model: str = "gpt-4",
-    llm_supports_vision: bool = False,
-    llm_supports_functions: bool = False,
-    context_window: int = 2048,
-    max_tokens: int = 4096,
-    temperature: float = 0.8,
-    tts_service: str = "openai",
-    stt_service: str = "openai",
-    local: bool = False,
     qr: bool = False,
 ):
-    if local:
-        tts_service = "piper"
-        # llm_service = "llamafile"
-        stt_service = "local-whisper"
-        select_local_model()
+
+    system_type = platform.system()
+    if system_type == "Windows":
+        server_host = "localhost"
 
     if not server_url:
         server_url = f"{server_host}:{server_port}"
@@ -136,6 +84,7 @@ def _run(
     signal.signal(signal.SIGINT, handle_exit)
 
     if server:
+        # print(f"Starting server with mobile = {mobile}")
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
         server_thread = threading.Thread(
@@ -144,15 +93,6 @@ def _run(
                 main(
                     server_host,
                     server_port,
-                    llm_service,
-                    model,
-                    llm_supports_vision,
-                    llm_supports_functions,
-                    context_window,
-                    max_tokens,
-                    temperature,
-                    tts_service,
-                    stt_service,
                 ),
             ),
         )
@@ -184,6 +124,7 @@ def _run(
         module = importlib.import_module(
             f".clients.{client_type}.device", package="source"
         )
+
         client_thread = threading.Thread(target=module.main, args=[server_url])
         client_thread.start()
 
